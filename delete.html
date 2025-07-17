@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Görev Sil</title>
+</head>
+<body>
+
+  <ul id="taskList"></ul>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCnQniOknWFO2jM1aTzizH4_Ucnzl0ZhQE",
+      authDomain: "crud-projects-1bb8d.firebaseapp.com",
+      databaseURL: "https://crud-projects-1bb8d-default-rtdb.firebaseio.com",
+      projectId: "crud-projects-1bb8d",
+      storageBucket: "crud-projects-1bb8d.appspot.com",
+      messagingSenderId: "102025031116",
+      appId: "1:102025031116:web:0dca2468566fe43f0d0169"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const taskList = document.getElementById("taskList");
+
+    function getTasksForDelete() {
+      const tasksRef = ref(db, "tasks/");
+
+      onValue(tasksRef, (snapshot) => {
+        taskList.innerHTML = "";
+
+        if (snapshot.exists()) {
+          const tasks = snapshot.val();
+
+          Object.entries(tasks).forEach(([id, task]) => {
+            renderTaskItem(id, task.text);
+          });
+        } else {
+          taskList.innerHTML = "<li>Silinecek görev yok.</li>";
+        }
+      });
+    }
+
+    function renderTaskItem(id, taskText) {
+      const li = document.createElement("li");
+
+      const span = document.createElement("span");
+      span.textContent = taskText;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Sil";
+      deleteBtn.dataset.id = id;
+
+      li.appendChild(span);
+      li.appendChild(deleteBtn);
+      taskList.appendChild(li);
+
+      deleteBtn.addEventListener("click", handleDeleteClick);
+    }
+
+    function handleDeleteClick(event) {
+      const id = event.target.dataset.id;
+      const taskRef = ref(db, `tasks/${id}`);
+      remove(taskRef);
+    }
+
+    getTasksForDelete();
+  </script>
+
+</body>
+</html>
