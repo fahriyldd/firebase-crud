@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+<ul id="taskList"></ul>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+ // Firebase ayarları
+    const firebaseConfig = {
+      apiKey: "AIzaSyCnQniOknWFO2jM1aTzizH4_Ucnzl0ZhQE",
+      authDomain: "crud-projects-1bb8d.firebaseapp.com",
+      databaseURL: "https://crud-projects-1bb8d-default-rtdb.firebaseio.com",
+      projectId: "crud-projects-1bb8d",
+      storageBucket: "crud-projects-1bb8d.appspot.com",
+      messagingSenderId: "102025031116",
+      appId: "1:102025031116:web:0dca2468566fe43f0d0169"
+    };
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const taskList = document.getElementById("taskList");
+
+function getTasksForUpdate() {
+  const tasksRef = ref(db, "tasks/");
+
+  onValue(tasksRef, (snapshot) => {
+    taskList.innerHTML = "";
+
+    if (snapshot.exists()) {
+      const tasks = snapshot.val();
+      Object.entries(tasks).forEach(([id, task]) => {
+        renderTaskItem(id, task.text);
+      });
+    } else {
+      taskList.innerHTML = "<li>Güncellenecek görev yok.</li>";
+    }
+  });
+}
+
+function renderTaskItem(id, taskText) {
+  const li = document.createElement("li");
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = taskText;
+  input.dataset.id = id;
+
+  const updateBtn = document.createElement("button");
+  updateBtn.textContent = "Güncelle";
+  updateBtn.dataset.id = id;
+
+  li.appendChild(input);
+  li.appendChild(updateBtn);
+  taskList.appendChild(li);
+
+  updateBtn.addEventListener("click", handleUpdateClick);
+}
+
+function handleUpdateClick(event) {
+  const btn = event.target;
+  const id = btn.dataset.id;
+
+  const input = document.querySelector(`input[data-id="${id}"]`);
+  const newText = input.value.trim();
+  if (newText === "") return;
+
+  const taskRef = ref(db, `tasks/${id}`);
+  update(taskRef, { text: newText });
+}
+
+getTasksForUpdate();
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
